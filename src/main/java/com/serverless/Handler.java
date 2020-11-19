@@ -26,12 +26,13 @@ public class Handler implements RequestHandler<Handler.Request, Handler.Response
 		}
 	}
 	
-	public Response handleRequestInternal(Request input, Context context) throws Exception {
-		LOG.info("received: {}", input);
+	public Response handleRequestInternal(Request request, Context context) throws Exception {
+		LOG.info("received: {}", request);
 		
 		Response response;
-		if (input.isRecursive()) {
-			input.setRecursive(false);
+		if (request.isRecursive()) {
+			request.setRecursive(false);
+			request.setMessage(request.getMessage());
 			
 			AWSLambda lambdaClient = AWSLambdaClientBuilder.standard()
 					.withCredentials(assumeRoleCredentialsProvider)
@@ -39,14 +40,24 @@ public class Handler implements RequestHandler<Handler.Request, Handler.Response
 			
 			InvokeResult result = lambdaClient.invoke(new InvokeRequest()
 					.withFunctionName(System.getenv("FUNCTION_NAME"))
-					.withPayload(objectMapper.writeValueAsString(input)));
+					.withPayload(objectMapper.writeValueAsString(request)));
 			
-			response = objectMapper.readValue(result.getPayload().array(), Response.class);
-			response.setMessage(response.getMessage() + " from " + context.getInvokedFunctionArn());
+			if (result.getFunctionError() != null) {
+				response = new Response();
+				response.setMessage("Error: " + result.getFunctionError() + ": " + new String(result.getPayload().array(), "UTF8"));
+			}
+			else {
+				response = objectMapper.readValue(result.getPayload().array(), Response.class);
+				response.setMessage(response.getMessage() + " from " + context.getInvokedFunctionArn());
+			}
 		}
 		else {
-			 response = new Response();
-			 response.setMessage(input.getMessage() + " from " + context.getInvokedFunctionArn());
+			if ("error".equals(request.getMessage())) {
+				throw new Exception("whoops!");
+			}
+			
+			response = new Response();
+			response.setMessage(request.getMessage() + " from " + context.getInvokedFunctionArn());
 		}
 			
 		return response;

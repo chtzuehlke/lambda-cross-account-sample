@@ -1,5 +1,5 @@
 {
-    "invokeRoleArn": "arn:aws:iam::111111111111:role/foo",
-    "functionName": "foo",
-    "principalRoleArn": "*"
+    "invokeRoleArn": "arn:aws:iam::398850652026:role/ipc-lambda-consumer-dev2-LambdaInvokeRole-1VQUTXO39YWZ5",
+    "functionName": "ipc-lambda-consumer-dev2-hello",
+    "principalRoleArn": "arn:aws:iam::398850652026:role/ipc-lambda-consumer-dev2-us-east-1-lambdaRole"
 }
