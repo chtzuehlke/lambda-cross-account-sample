@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.amazonaws.auth.STSAssumeRoleSessionCredentialsProvider;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.lambda.AWSLambda;
 import com.amazonaws.services.lambda.AWSLambdaClientBuilder;
 import com.amazonaws.services.lambda.model.InvokeRequest;
@@ -14,7 +15,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Handler implements RequestHandler<Handler.Request, Handler.Response> {
 	private static final Logger LOG = LogManager.getLogger(Handler.class);
+	
 	private static final STSAssumeRoleSessionCredentialsProvider assumeRoleCredentialsProvider = new STSAssumeRoleSessionCredentialsProvider.Builder(System.getenv("INVOKE_ROLE"), "JustASession").build();
+	private static final AWSLambda lambdaClient = AWSLambdaClientBuilder
+			.standard()
+			.withRegion(Regions.US_EAST_1)
+			.withCredentials(assumeRoleCredentialsProvider)
+			.build();
+			
 	private static final ObjectMapper objectMapper = new ObjectMapper();
 
 	@Override
@@ -33,10 +41,6 @@ public class Handler implements RequestHandler<Handler.Request, Handler.Response
 		if (request.isRecursive()) {
 			request.setRecursive(false);
 			request.setMessage(request.getMessage());
-			
-			AWSLambda lambdaClient = AWSLambdaClientBuilder.standard()
-					.withCredentials(assumeRoleCredentialsProvider)
-					.build();;
 			
 			InvokeResult result = lambdaClient.invoke(new InvokeRequest()
 					.withFunctionName(System.getenv("FUNCTION_NAME"))
