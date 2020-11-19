@@ -15,7 +15,7 @@ provider:
     - Effect: "Allow"
       Action:
         - "sts:AssumeRole"
-      Resource: ${self:custom.invokeRoleArn} #circular !GetAtt LambdaInvokeRole.Arn      
+      Resource: ${self:custom.invokeRoleArn} 
 
 package:
   artifact: target/hello-dev.jar
@@ -24,7 +24,7 @@ functions:
   hello:
     handler: com.serverless.Handler
     environment:
-      INVOKE_ROLE: ${self:custom.invokeRoleArn} #circular !GetAtt LambdaInvokeRole.Arn
+      INVOKE_ROLE: ${self:custom.invokeRoleArn} 
       FUNCTION_NAME: ${self:custom.functionName}
 
 resources:
@@ -37,7 +37,7 @@ resources:
             - Effect: Allow
               Principal:
                 AWS:
-                - ${self:custom.principalRoleArn} #!GetAtt IamRoleLambdaExecution.Arn
+                - ${self:custom.principalRoleArn} 
               Action:
                 - 'sts:AssumeRole'
         Path: /
